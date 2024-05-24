@@ -230,6 +230,8 @@ class Gui(wx.Frame):
     def __init__(self, title, path, names, devices, network, monitors):
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
+        self.QuitID = 999
+        self.OpenID = 998
 
         # Configure the file menu
         fileMenu = wx.Menu()
@@ -238,6 +240,18 @@ class Gui(wx.Frame):
         fileMenu.Append(wx.ID_EXIT, "&Exit")
         menuBar.Append(fileMenu, "&File")
         self.SetMenuBar(menuBar)
+        toolbar = self.CreateToolBar()
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR)
+        toolbar.AddTool(wx.ID_ANY, "New file", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.OpenID, "Open file", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE, wx.ART_TOOLBAR)
+        toolbar.AddTool(wx.ID_ANY, "Save file", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_QUIT, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.QuitID, "Quit", myimage)
+        toolbar.Bind(wx.EVT_TOOL, self.Toolbarhandler)
+        toolbar.Realize()
+        self.ToolBar = toolbar
 
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
@@ -295,3 +309,14 @@ class Gui(wx.Frame):
         text_box_value = self.text_box.GetValue()
         text = "".join(["New text box value: ", text_box_value])
         self.canvas.render(text)
+
+    def Toolbarhandler(self, event):
+        if event.GetId() == self.QuitID:
+            print("Quitting")
+            self.Close(True)
+        if event.GetId() == self.OpenID:
+            openFileDialog = wx.FileDialog(self, "Open txt file", "", "", wildcard = "TXT files (*.txt)|*.txt", style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST)
+            if openFileDialog.ShowModal() == wx.ID_CANCEL:
+                print("The user cancelled")
+                return
+            print("File chosen=", openFileDialog.GetPath())
