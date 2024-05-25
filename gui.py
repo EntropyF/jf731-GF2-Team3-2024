@@ -315,7 +315,10 @@ class Gui(wx.Frame):
             print("Quitting")
             self.Close(True)
         if event.GetId() == self.OpenID:
-            openFileDialog = wx.FileDialog(self, "Open txt file", "", "", wildcard = "TXT files (*.txt)|*.txt", style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST)
+            openFileDialog = wx.FileDialog(self, "Open txt file", "", "", 
+                                           wildcard = "TXT files (*.txt)|*.txt", 
+                                           style=wx.FD_OPEN + 
+                                           wx.FD_FILE_MUST_EXIST)
             if openFileDialog.ShowModal() == wx.ID_CANCEL:
                 print("The user cancelled")
                 return

@@ -40,6 +40,8 @@ class Names:
 
     def __init__(self):
         """Initialise names list."""
+        # Name list should be a list of name strings
+        self.names = []
         self.error_code_count = 0  # how many error codes have been declared
 
     def unique_error_codes(self, num_error_codes):
@@ -55,15 +57,45 @@ class Names:
 
         If the name string is not present in the names list, return None.
         """
+        if not isinstance(name_string, str):
+            raise TypeError("Expected name_string to be a string.")
+        if not name_string.isalnum():
+            raise SyntaxError("string name is not alphanumeric")
+        if name_string.isdigit():
+            raise SyntaxError("name must be string")
+
+        if name_string in self.names:
+            return self.names.index(name_string)
+        else:
+            return None
+
 
     def lookup(self, name_string_list):
         """Return a list of name IDs for each name string in name_string_list.
 
         If the name string is not present in the names list, add it.
         """
+        if not isinstance(name_string_list, list):
+            raise TypeError("Expected name_string_list to be a list.")
+        for name in name_string_list:
+            if not isinstance(name, str):
+                raise TypeError("All items in name_string_list must be strings.")
+
+        name_ids = []
+        for name in name_string_list:
+            if name not in self.names:
+                self.names.append(name)
+            name_ids.append(self.names.index(name))
+        return name_ids
 
     def get_name_string(self, name_id):
         """Return the corresponding name string for name_id.
 
         If the name_id is not an index in the names list, return None.
         """
+        if name_id < 0:
+            raise ValueError("ID is out of range")
+        try:
+            return self.names[name_id]
+        except IndexError:
+            return None
