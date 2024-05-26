@@ -58,6 +58,14 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.init = False
         self.context = wxcanvas.GLContext(self)
 
+        # Gain access to Gui Class parent's variables
+        self.parent = parent
+
+        # Initialise store for monitors and devices
+        self.monitors = monitors
+        self.devices = devices
+        self.not_connected = False
+
         # Initialise variables for panning
         self.pan_x = 0
         self.pan_y = 0
@@ -87,6 +95,24 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glTranslated(self.pan_x, self.pan_y, 0.0)
         GL.glScaled(self.zoom, self.zoom, self.zoom)
 
+    def render_trace(self, x, y, values, name):
+        """Draw a signal output trace."""
+        self.render_text(name, 10, y + 5) # name is signal name
+        GL.glColor3f(0.8, 0.4, 0.2) # trace is Red
+        GL.glBegin(GL.GL_LINE_STRIP)
+        for i in range(len(values)): # values is a list of 0/1
+            x0 = (i * 20) + x
+            x1 = (i * 20) + x + 20
+            if values[i]: # if values[i] is 1, signal raising
+                y0 = y + 25
+            else:
+                y0 = y
+
+            GL.glVertex2f(x0, y0)
+            GL.glVertex2f(x1, y0)
+        GL.glEnd()
+        GL.glFlush()
+
     def render(self, text):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
@@ -95,16 +121,41 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init_gl()
             self.init = True
 
+        self.canvas_size = self.GetClientSize()
+
+        if not self.parent.values:
+            self.parent.trace_names = ['N/A']
+            self.parent.values = [[]]
+
+        display_ys = [self.canvas_size[1] - 100 - 80 * j for j in 
+                      range(len(self.parent.values))]
+        display_x = 120
+        signal_no = len(self.parent.trace_names)
+
         # Clear everything
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         # Draw specified text at position (10, 10)
         self.render_text(text, 10, 10)
 
+        # Draw title
+        title_text = ("Monitored Signal Display")
+        self.render_text(title_text, 10, self.canvas_size[1] - 20, title=True)
+
+        if self.not_connected:
+            self.render_text(('Not all input connected...'), 10,
+                             self.canvas_size[1] - 60)
+        
+        else:
+            for j in range(signal_no):
+                self.render_trace(display_x, display_ys[j],
+                                  self.parent.values[j],
+                                  self.parent.trace_names[j])
+
         # Draw a sample signal trace
-        GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
+        GL.glColor3f(0.8, 0.4, 0.2)  # signal trace is Red
         GL.glBegin(GL.GL_LINE_STRIP)
-        for i in range(10):
+        for i in range(15):
             x = (i * 20) + 10
             x_next = (i * 20) + 30
             if i % 2 == 0:
@@ -190,11 +241,15 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         else:
             self.Refresh()  # triggers the paint event
 
-    def render_text(self, text, x_pos, y_pos):
+    def render_text(self, text, x_pos, y_pos, title=False): # Add additional attribute of title or not
         """Handle text drawing operations."""
         GL.glColor3f(0.0, 0.0, 0.0)  # text is black
         GL.glRasterPos2f(x_pos, y_pos)
-        font = GLUT.GLUT_BITMAP_HELVETICA_12
+
+        if not title:
+            font = GLUT.GLUT_BITMAP_HELVETICA_12
+        else:
+            font = GLUT.GLUT_BITMAP_HELVETICA_18
 
         for character in text:
             if character == '\n':
@@ -232,6 +287,24 @@ class Gui(wx.Frame):
         super().__init__(parent=None, title=title, size=(800, 600))
         self.QuitID = 999
         self.OpenID = 998
+
+        # Store for monitored signal from network
+        self.values = None
+        self.trace_names = None
+        self.time_steps = 8
+
+        # Store inputs from logsim.py
+        self.title = title
+        self.path = path
+        self.names = names
+        self.devices = devices
+        self.network = network
+        self.monitors = monitors
+
+        # self.switch_ids = self.devices.find_devices(self.devices.SWITCH)
+        # self.switch_names = [self.names.get_name_string(i) for i in self.switch_ids]
+        # self.switch_values = [self.devices.get_switch_value(i) for i in self.switch_ids]
+        # self.sig_mons, self.sig_not_mons = self.monitors.get_signal_names()
 
         # Configure the file menu
         fileMenu = wx.Menu()
