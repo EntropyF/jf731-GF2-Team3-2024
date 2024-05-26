@@ -362,7 +362,9 @@ class Gui(wx.Frame):
         self.continue_button = wx.Button(self, wx.ID_ANY, "Continue") # Continue button
 
         # Test setting for temporary use
+        self.switch_ids = [0, 1, 2]
         self.switch_names = ['S1', 'S2', 'S3']
+        self.switch_values = [1, 0, 1]
         self.sig_not_mons = ['A1', 'N1']
         self.sig_mons = ['G1', 'D1']
 
@@ -394,6 +396,10 @@ class Gui(wx.Frame):
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
         self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
+        self.switch_choice.Bind(wx.EVT_COMBOBOX, self.on_switch_choice)
+        self.switch_set.Bind(wx.EVT_CHECKBOX, self.on_switch_set)
+        self.add_monitor_button.Bind(wx.EVT_BUTTON, self.on_add_monitor_button)
+        self.remove_monitor_button.Bind(wx.EVT_BUTTON, self.on_remove_monitor_button)
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -469,7 +475,6 @@ class Gui(wx.Frame):
         spin_value = self.spin.GetValue()
         self.time_steps = spin_value
         # self.run_network_and_get_values()
-        # text = "Run button pressed."
         text = "".join(["Run botton pressed, time step is: ", str(self.time_steps)])
         self.canvas.render(text)
     
@@ -508,3 +513,76 @@ class Gui(wx.Frame):
             self.switch_set.SetValue(1)
         else:
             self.switch_set.SetValue(0)
+    
+    def on_switch_set(self, event):
+        """Handle the switch-set event."""
+        sw_name = self.switch_choice.GetValue()
+        sw_no = self.switch_names.index(sw_name)
+        self.switch_values[sw_no] = [0, 1][self.switch_set.GetValue()]
+        text = "".join(["Switch ", sw_name, " is now ", "ON" if self.switch_values[sw_no] else "OFF"])
+        self.canvas.render(text)
+        # sw_id = self.names.query(sw_name)
+        # self.devices.set_switch(sw_id, self.switch_set.GetValue())
+        # self.run_network_and_get_values()
+        # self.canvas.render('')
+        
+    def on_add_monitor_button(self, event):
+        """User can add monitors using this button."""
+        mon_choice_name = self.add_monitor_choice.GetValue()
+        if '.' in mon_choice_name:
+            dot_index = mon_choice_name.index('.')
+            output_id = self.names.query(mon_choice_name[dot_index + 1:])
+            mon_choice_name_start = mon_choice_name[:dot_index]
+        else:
+            mon_choice_name_start = mon_choice_name
+            output_id = None
+        
+        if mon_choice_name not in self.sig_not_mons:
+            return ''
+        text = "".join(["Add ", str(mon_choice_name)])
+        self.canvas.render(text)
+
+        # device_id = self.names.query(mon_choice_name_start)
+        # self.monitors.make_monitor(device_id, output_id)
+        # self.run_network_and_get_values()
+
+        self.sig_not_mons.remove(mon_choice_name)
+        self.sig_mons.append(mon_choice_name)
+        self.add_monitor_choice.SetItems(self.sig_not_mons)
+        self.remove_monitor_choice.SetItems(self.sig_mons)
+        if self.sig_not_mons:
+            self.add_monitor_choice.SetValue(self.sig_not_mons[0])
+        if self.sig_mons:
+            self.remove_monitor_choice.SetValue(self.sig_mons[0])
+        # self.canvas.render('')
+
+    def on_remove_monitor_button(self, event):
+        """User can remove monitors using this button."""
+        mon_choice_name = self.remove_monitor_choice.GetValue()
+        if '.' in mon_choice_name:
+            dot_index = mon_choice_name.index('.')
+            output_id = self.names.query(mon_choice_name[dot_index + 1:])
+            mon_choice_name_strt = mon_choice_name[:dot_index]
+        else:
+            mon_choice_name_strt = mon_choice_name
+            output_id = None
+
+        if mon_choice_name not in self.sig_mons:
+            return ''
+        text = "".join(["Remove ", str(mon_choice_name)])
+        self.canvas.render(text)
+
+        # device_id = self.names.query(mon_choice_name_strt)
+        # self.monitors.remove_monitor(device_id, output_id)
+        # self.run_network_and_get_values()
+
+        self.sig_not_mons.append(mon_choice_name)
+        self.sig_mons.remove(mon_choice_name)
+
+        self.add_monitor_choice.SetItems(self.sig_not_mons)
+        self.remove_monitor_choice.SetItems(self.sig_mons)
+        if self.sig_not_mons:
+            self.add_monitor_choice.SetValue(self.sig_not_mons[0])
+        if self.sig_mons:
+            self.remove_monitor_choice.SetValue(self.sig_mons[0])
+        # self.canvas.render('')
