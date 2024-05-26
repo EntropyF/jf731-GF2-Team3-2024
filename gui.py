@@ -95,6 +95,24 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glTranslated(self.pan_x, self.pan_y, 0.0)
         GL.glScaled(self.zoom, self.zoom, self.zoom)
 
+    def render_graph_axes(self, x, y):
+            """Draw axis for a given signal output."""
+            time_step_no = len(self.parent.values[0])
+            GL.glColor3f(0.0, 0.0, 0.8) # axis is blue
+
+            GL.glBegin(GL.GL_LINE_STRIP)
+            GL.glVertex2f(x - 4, y + 29)
+            GL.glVertex2f(x - 4, y - 4)
+            GL.glVertex2f(x + 4 + (time_step_no * 20), y - 4)
+            GL.glEnd()
+            GL.glFlush()
+
+            for i in range(time_step_no + 1):
+                self.render_text(str(i), x - 4 + (20 * i), y - 16)
+
+            self.render_text('0', x - 14, y - 6)
+            self.render_text('1', x - 14, y + 19)
+
     def render_trace(self, x, y, values, name):
         """Draw a signal output trace."""
         self.render_text(name, 10, y + 5) # name is signal name
@@ -143,7 +161,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.render_text(title_text, 10, self.canvas_size[1] - 20, title=True)
 
         if self.not_connected:
-            self.render_text(('Not all input connected...'), 10,
+            self.render_text('Not all input connected...', 10,
                              self.canvas_size[1] - 60)
         
         else:
@@ -151,6 +169,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 self.render_trace(display_x, display_ys[j],
                                   self.parent.values[j],
                                   self.parent.trace_names[j])
+                self.render_graph_axes(display_x, display_ys[j])
 
         # Draw a sample signal trace
         GL.glColor3f(0.8, 0.4, 0.2)  # signal trace is Red
@@ -271,6 +290,8 @@ class Gui(wx.Frame):
 
     Public methods
     --------------
+    Toolbarhandler(self, event): Handles toolbar presses.
+
     on_menu(self, event): Event handler for the file menu.
 
     on_spin(self, event): Event handler for when the user changes the spin
@@ -301,6 +322,7 @@ class Gui(wx.Frame):
         self.network = network
         self.monitors = monitors
 
+        # # Setup switch information and signal names under and not under monitored
         # self.switch_ids = self.devices.find_devices(self.devices.SWITCH)
         # self.switch_names = [self.names.get_name_string(i) for i in self.switch_ids]
         # self.switch_values = [self.devices.get_switch_value(i) for i in self.switch_ids]
@@ -313,6 +335,8 @@ class Gui(wx.Frame):
         fileMenu.Append(wx.ID_EXIT, "&Exit")
         menuBar.Append(fileMenu, "&File")
         self.SetMenuBar(menuBar)
+
+        # Setup the toolbar
         toolbar = self.CreateToolBar()
         myimage = wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR)
         toolbar.AddTool(wx.ID_ANY, "New file", myimage)
@@ -330,32 +354,100 @@ class Gui(wx.Frame):
         self.canvas = MyGLCanvas(self, devices, monitors)
 
         # Configure the widgets
-        self.text = wx.StaticText(self, wx.ID_ANY, "Cycles")
-        self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
-        self.run_button = wx.Button(self, wx.ID_ANY, "Run")
+        self.text = wx.StaticText(self, wx.ID_ANY, "Cycles") # Cycle static text
+        self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10") # A spin for cycle
+        self.run_button = wx.Button(self, wx.ID_ANY, "Run") # Run botton
         self.text_box = wx.TextCtrl(self, wx.ID_ANY, "",
-                                    style=wx.TE_PROCESS_ENTER)
+                                    style=wx.TE_PROCESS_ENTER) # Text box to enter command
+        self.continue_button = wx.Button(self, wx.ID_ANY, "Continue") # Continue button
+
+        # Test setting for temporary use
+        self.switch_names = ['S1', 'S2', 'S3']
+        self.sig_not_mons = ['A1', 'N1']
+        self.sig_mons = ['G1', 'D1']
+
+        ## Switch widgets
+        self.text_switch_control = wx.StaticText(self, wx.ID_ANY,
+                                                 "Switch On: ") # Switch static text
+        self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SWITCH>", 
+                                         choices=self.switch_names) # Drop box of switch choice
+        self.switch_choice.SetValue(self.switch_names[0])
+        self.switch_set = wx.CheckBox(self, wx.ID_ANY) # Check box for switch 1/0 setup
+
+        ## Monitor Add/Remove widgets
+        self.text_monitor = wx.StaticText(self, wx.ID_ANY,
+                                          "Monitor Control")
+        self.add_monitor_button = wx.Button(self, wx.ID_ANY, "Add")
+        self.remove_monitor_button = wx.Button(self, wx.ID_ANY, "Remove")
+        self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>",
+                                              choices=self.sig_not_mons)
+        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "SINGAL",
+                                                 choices=self.sig_mons)
+        if len(self.sig_not_mons): # if sig_not_mons list is not empty
+            self.add_monitor_choice.SetValue(self.sig_not_mons[0])
+        if len(self.sig_mons):
+            self.remove_monitor_choice.SetValue(self.sig_mons[0])
 
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
+        self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
         self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         side_sizer = wx.BoxSizer(wx.VERTICAL)
+        side_sizer1 = wx.BoxSizer(wx.HORIZONTAL) # Contain run and continue buttons
+        side_sizer2 = wx.BoxSizer(wx.HORIZONTAL) # Contain Switch droplist and checkbox
+        side_sizer3 = wx.BoxSizer(wx.HORIZONTAL) # Add Monitor line
+        side_sizer4 = wx.BoxSizer(wx.HORIZONTAL) # Remove Monitor line
 
         main_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(side_sizer, 1, wx.ALL, 5)
 
+        ## Cycle and spin
         side_sizer.Add(self.text, 1, wx.TOP, 10)
         side_sizer.Add(self.spin, 1, wx.ALL, 5)
-        side_sizer.Add(self.run_button, 1, wx.ALL, 5)
+
+        ## Run and Continue button
+        side_sizer.Add(side_sizer1, 1, wx.ALL, 5)
+        side_sizer1.Add(self.run_button, 1, wx.ALL, 5)
+        side_sizer1.Add(self.continue_button, 1, wx.ALL, 5)
+
+        ## Textbox and Switch
         side_sizer.Add(self.text_box, 1, wx.ALL, 5)
+        side_sizer.Add(self.text_switch_control, 1, wx.ALL, 10)
+        side_sizer.Add(side_sizer2, 1, wx.ALL, 5)
+        side_sizer2.Add(self.switch_choice, 1, wx.ALL, 5)
+        side_sizer2.Add(self.switch_set, 1, wx.ALL, 5)
+
+        ## Monitor Add and Remove
+        side_sizer.Add(self.text_monitor, 1, wx.ALL, 10)
+        side_sizer.Add(side_sizer3, 1, wx.ALL, 5)
+        side_sizer3.Add(self.add_monitor_choice, 1, wx.ALL, 5)
+        side_sizer3.Add(self.add_monitor_button, 1, wx.ALL, 5)
+        side_sizer.Add(side_sizer4, 1, wx.ALL, 5)
+        side_sizer4.Add(self.remove_monitor_choice, 1, wx.ALL, 5)
+        side_sizer4.Add(self.remove_monitor_button, 1, wx.ALL, 5)
 
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
+
+    def Toolbarhandler(self, event):
+        """Handels toolbar presses."""
+        if event.GetId() == self.QuitID:
+            print("Quitting")
+            self.Close(True)
+        if event.GetId() == self.OpenID:
+            openFileDialog = wx.FileDialog(self, "Open txt file", "", "", 
+                                           wildcard = "TXT files (*.txt)|*.txt", 
+                                           style=wx.FD_OPEN + 
+                                           wx.FD_FILE_MUST_EXIST)
+            if openFileDialog.ShowModal() == wx.ID_CANCEL:
+                print("The user cancelled")
+                return
+            print("File chosen=", openFileDialog.GetPath())
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
@@ -374,8 +466,33 @@ class Gui(wx.Frame):
 
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
-        text = "Run button pressed."
+        spin_value = self.spin.GetValue()
+        self.time_steps = spin_value
+        # self.run_network_and_get_values()
+        # text = "Run button pressed."
+        text = "".join(["Run botton pressed, time step is: ", str(self.time_steps)])
         self.canvas.render(text)
+    
+    def on_continue_button(self, event):
+        """Handle the event when the user clicks the continue button."""
+        spin_cont_value = self.spin.GetValue()
+        self.time_steps += spin_cont_value
+        # self.run_network_and_get_values()
+        text  ="".join(["Continue button pressed, update time step: ", str(self.time_steps)])
+        self.canvas.render(text)
+
+    def run_network_and_get_values(self):
+        """Run the network and get the monitored signal values."""
+        self.canvas.not_connected = not self.network.check_network()
+        if self.canvas.not_connected:
+            return ""
+        self.devices.cold_startup()
+        self.monitors.reset_monitors()
+
+        monitor_dict = self.monitors.monitors_dictionary
+        for device_id, output_id in monitor_dict:
+            self.values.append(monitor_dict[(device_id, output_id)])
+        self.trace_names = self.monitors.get_signal_names()[0]
 
     def on_text_box(self, event):
         """Handle the event when the user enters text."""
@@ -383,16 +500,11 @@ class Gui(wx.Frame):
         text = "".join(["New text box value: ", text_box_value])
         self.canvas.render(text)
 
-    def Toolbarhandler(self, event):
-        if event.GetId() == self.QuitID:
-            print("Quitting")
-            self.Close(True)
-        if event.GetId() == self.OpenID:
-            openFileDialog = wx.FileDialog(self, "Open txt file", "", "", 
-                                           wildcard = "TXT files (*.txt)|*.txt", 
-                                           style=wx.FD_OPEN + 
-                                           wx.FD_FILE_MUST_EXIST)
-            if openFileDialog.ShowModal() == wx.ID_CANCEL:
-                print("The user cancelled")
-                return
-            print("File chosen=", openFileDialog.GetPath())
+    def on_switch_choice(self, event):
+        """Handle the new_switch_choice event."""
+        sw_name = self.switch_choice.GetValue()
+        sw_val = self.switch_values[self.switch_names.index(sw_name)]
+        if sw_val:
+            self.switch_set.SetValue(1)
+        else:
+            self.switch_set.SetValue(0)
