@@ -451,9 +451,32 @@ class Gui(wx.Frame):
                                            style=wx.FD_OPEN + 
                                            wx.FD_FILE_MUST_EXIST)
             if openFileDialog.ShowModal() == wx.ID_CANCEL:
-                print("The user cancelled")
+                print("The user cancelled the open-file action.")
                 return
-            print("File chosen=", openFileDialog.GetPath())
+            new_path = openFileDialog.GetPath()
+            print("File chosen is ", new_path)
+            try:
+                with open(new_path, 'r') as file:
+                    content = file.read()
+                    # Open the new window with the content
+                    text_window = TextWindow(None, title='Definition File Content', 
+                                             content=content)
+                    text_window.Show()
+            except IOError:
+                wx.LogError("Cannot open file '%s'." % new_path)
+
+            # Initialise all the methods to analysis this file
+            self.Close(True)
+            names = Names()
+            devices = Devices(names)
+            network = Network(names, devices)
+            monitors = Monitors(names, devices, network)
+            scanner = Scanner(new_path, names)
+            parser = Parser(names, devices, network, monitors, scanner)
+            if parser.parse_network():
+                gui = Gui("Logic Simulator", new_path, names, devices, network, 
+                          monitors)
+                gui.Show(True)
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
@@ -475,7 +498,8 @@ class Gui(wx.Frame):
         spin_value = self.spin.GetValue()
         self.time_steps = spin_value
         # self.run_network_and_get_values()
-        text = "".join(["Run botton pressed, time step is: ", str(self.time_steps)])
+        text = "".join(["Run botton pressed, time step is: ", 
+                        str(self.time_steps)])
         self.canvas.render(text)
     
     def on_continue_button(self, event):
@@ -483,7 +507,8 @@ class Gui(wx.Frame):
         spin_cont_value = self.spin.GetValue()
         self.time_steps += spin_cont_value
         # self.run_network_and_get_values()
-        text  ="".join(["Continue button pressed, update time step: ", str(self.time_steps)])
+        text = "".join(["Continue button pressed, update time step: ", 
+                        str(self.time_steps)])
         self.canvas.render(text)
 
     def run_network_and_get_values(self):
@@ -518,13 +543,13 @@ class Gui(wx.Frame):
         """Handle the switch-set event."""
         sw_name = self.switch_choice.GetValue()
         sw_no = self.switch_names.index(sw_name)
-        self.switch_values[sw_no] = [0, 1][self.switch_set.GetValue()]
-        text = "".join(["Switch ", sw_name, " is now ", "ON" if self.switch_values[sw_no] else "OFF"])
+        self.switch_values[sw_no] = [0, 1][self.switch_set.GetValue()]        
+        sw_id = self.names.query(sw_name)
+        self.devices.set_switch(sw_id, self.switch_set.GetValue())
+        self.run_network_and_get_values()
+        text = "".join(["Switch ", sw_name, " is now ", 
+                        "ON" if self.switch_values[sw_no] else "OFF"])
         self.canvas.render(text)
-        # sw_id = self.names.query(sw_name)
-        # self.devices.set_switch(sw_id, self.switch_set.GetValue())
-        # self.run_network_and_get_values()
-        # self.canvas.render('')
         
     def on_add_monitor_button(self, event):
         """User can add monitors using this button."""
@@ -539,12 +564,12 @@ class Gui(wx.Frame):
         
         if mon_choice_name not in self.sig_not_mons:
             return ''
-        text = "".join(["Add ", str(mon_choice_name)])
+        text = "".join(["Add monitor at ", str(mon_choice_name)])
         self.canvas.render(text)
 
-        # device_id = self.names.query(mon_choice_name_start)
-        # self.monitors.make_monitor(device_id, output_id)
-        # self.run_network_and_get_values()
+        device_id = self.names.query(mon_choice_name_start)
+        self.monitors.make_monitor(device_id, output_id)
+        self.run_network_and_get_values()
 
         self.sig_not_mons.remove(mon_choice_name)
         self.sig_mons.append(mon_choice_name)
@@ -554,7 +579,6 @@ class Gui(wx.Frame):
             self.add_monitor_choice.SetValue(self.sig_not_mons[0])
         if self.sig_mons:
             self.remove_monitor_choice.SetValue(self.sig_mons[0])
-        # self.canvas.render('')
 
     def on_remove_monitor_button(self, event):
         """User can remove monitors using this button."""
@@ -569,12 +593,12 @@ class Gui(wx.Frame):
 
         if mon_choice_name not in self.sig_mons:
             return ''
-        text = "".join(["Remove ", str(mon_choice_name)])
+        text = "".join(["Remove monitor at ", str(mon_choice_name)])
         self.canvas.render(text)
 
-        # device_id = self.names.query(mon_choice_name_strt)
-        # self.monitors.remove_monitor(device_id, output_id)
-        # self.run_network_and_get_values()
+        device_id = self.names.query(mon_choice_name_strt)
+        self.monitors.remove_monitor(device_id, output_id)
+        self.run_network_and_get_values()
 
         self.sig_not_mons.append(mon_choice_name)
         self.sig_mons.remove(mon_choice_name)
@@ -585,4 +609,16 @@ class Gui(wx.Frame):
             self.add_monitor_choice.SetValue(self.sig_not_mons[0])
         if self.sig_mons:
             self.remove_monitor_choice.SetValue(self.sig_mons[0])
-        # self.canvas.render('')
+
+class TextWindow(wx.Frame):
+    def __init__(self, parent, title, content):
+        super(TextWindow, self).__init__(parent, title=title)
+        
+        # Set up the new window
+        panel = wx.Panel(self)
+        text_ctrl = wx.TextCtrl(panel, value=content, 
+                                style=wx.TE_MULTILINE | wx.TE_READONLY, 
+                                pos=(10, 10), size=(380, 550))
+        
+        self.SetTitle(title)
+        self.SetSize((400, 600))
