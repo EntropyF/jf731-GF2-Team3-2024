@@ -141,6 +141,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         self.canvas_size = self.GetClientSize()
 
+        # Test trace_names and values
+        self.parent.trace_names = ["A1", "N1"]
+        self.parent.values = [[1,0,1,0,1,0,1,0,1,0], [1,1,0,0,1,1,0,0,1,1]]
+
         if not self.parent.values:
             self.parent.trace_names = ['N/A']
             self.parent.values = [[]]
@@ -154,7 +158,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         # Draw specified text at position (10, 10)
-        self.render_text(text, 10, 10)
+        # self.render_text(text, 10, 10)
         self.render_text(text, 10, self.canvas_size[1] - 40)
 
         # Draw title
@@ -172,19 +176,19 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                                   self.parent.trace_names[j])
                 self.render_graph_axes(display_x, display_ys[j])
 
-        # Draw a sample signal trace
-        GL.glColor3f(0.8, 0.4, 0.2)  # signal trace is Red
-        GL.glBegin(GL.GL_LINE_STRIP)
-        for i in range(15):
-            x = (i * 20) + 10
-            x_next = (i * 20) + 30
-            if i % 2 == 0:
-                y = 75
-            else:
-                y = 100
-            GL.glVertex2f(x, y)
-            GL.glVertex2f(x_next, y)
-        GL.glEnd()
+        # # Draw a sample signal trace
+        # GL.glColor3f(0.8, 0.4, 0.2)  # signal trace is Red
+        # GL.glBegin(GL.GL_LINE_STRIP)
+        # for i in range(15):
+        #     x = (i * 20) + 10
+        #     x_next = (i * 20) + 30
+        #     if i % 2 == 0:
+        #         y = 75
+        #     else:
+        #         y = 100
+        #     GL.glVertex2f(x, y)
+        #     GL.glVertex2f(x_next, y)
+        # GL.glEnd()
 
         # We have been drawing to the back buffer, flush the graphics pipeline
         # and swap the back buffer to the front
@@ -331,22 +335,22 @@ class Gui(wx.Frame):
         # self.switch_values = [self.devices.get_switch_value(i) for i in self.switch_ids]
         # self.sig_mons, self.sig_not_mons = self.monitors.get_signal_names()
 
-        # Configure the file menu
-        fileMenu = wx.Menu()
-        menuBar = wx.MenuBar()
-        fileMenu.Append(wx.ID_ABOUT, "&About")
-        fileMenu.Append(wx.ID_EXIT, "&Exit")
-        menuBar.Append(fileMenu, "&File")
-        self.SetMenuBar(menuBar)
+        # # Configure the file menu
+        # fileMenu = wx.Menu()
+        # menuBar = wx.MenuBar()
+        # fileMenu.Append(wx.ID_ABOUT, "&About")
+        # fileMenu.Append(wx.ID_EXIT, "&Exit")
+        # menuBar.Append(fileMenu, "&File")
+        # self.SetMenuBar(menuBar)
 
         # Setup the toolbar
         toolbar = self.CreateToolBar()
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
         toolbar.AddTool(self.OpenID, "Open file", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, wx.ART_TOOLBAR)
-        toolbar.AddTool(wx.ID_ANY, "About", myimage)
+        toolbar.AddTool(self.AboutID, "About", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
-        toolbar.AddTool(wx.ID_ANY, "Help", myimage)
+        toolbar.AddTool(self.HelpID, "Help", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_QUIT, wx.ART_TOOLBAR)
         toolbar.AddTool(self.QuitID, "Quit", myimage)
         toolbar.Bind(wx.EVT_TOOL, self.Toolbarhandler)
@@ -394,7 +398,7 @@ class Gui(wx.Frame):
             self.remove_monitor_choice.SetValue(self.sig_mons[0])
 
         # Bind events to widgets
-        self.Bind(wx.EVT_MENU, self.on_menu)
+        # self.Bind(wx.EVT_MENU, self.on_menu)
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
@@ -487,26 +491,26 @@ class Gui(wx.Frame):
             wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
             
-        # if event.GetId() == self.HelpID:
-        #     try:
-        #         with open(new_path, 'r') as file:
-        #             content = file.read()
-        #             # Open the new window with the content
-        #             help_window = HelpWindow(None, title='Help', 
-        #                                      content=content)
-        #             help_window.Show()
-        #     except IOError:
-        #         wx.LogError("Cannot open file '%s'." % new_path)
+        if event.GetId() == self.HelpID:
+            try:
+                with open("help.txt", 'r') as file:
+                    content = file.read()
+                    # Open the new window with the content
+                    help_window = HelpWindow(None, title='Help', 
+                                             content=content)
+                    help_window.Show()
+            except IOError:
+                wx.LogError("Cannot open file '%s'." % "help.txt")
 
 
-    def on_menu(self, event):
-        """Handle the event when the user selects a menu item."""
-        Id = event.GetId()
-        if Id == wx.ID_EXIT:
-            self.Close(True)
-        if Id == wx.ID_ABOUT:
-            wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
-                          "About Logsim", wx.ICON_INFORMATION | wx.OK)
+    # def on_menu(self, event):
+    #     """Handle the event when the user selects a menu item."""
+    #     Id = event.GetId()
+    #     if Id == wx.ID_EXIT:
+    #         self.Close(True)
+    #     if Id == wx.ID_ABOUT:
+    #         wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
+    #                       "About Logsim", wx.ICON_INFORMATION | wx.OK)
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
@@ -652,7 +656,7 @@ class HelpWindow(wx.Frame):
         panel = wx.Panel(self)
         text_ctrl = wx.TextCtrl(panel, value=content,
                                 style=wx.TE_MULTILINE | wx.TE_READONLY,
-                                pos=(10, 10), size=(550, 550))
+                                pos=(10, 10), size=(580, 550))
         
         self.SetTitle(title)
         self.SetSize((600, 600))
