@@ -176,20 +176,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                                   self.parent.trace_names[j])
                 self.render_graph_axes(display_x, display_ys[j])
 
-        # # Draw a sample signal trace
-        # GL.glColor3f(0.8, 0.4, 0.2)  # signal trace is Red
-        # GL.glBegin(GL.GL_LINE_STRIP)
-        # for i in range(15):
-        #     x = (i * 20) + 10
-        #     x_next = (i * 20) + 30
-        #     if i % 2 == 0:
-        #         y = 75
-        #     else:
-        #         y = 100
-        #     GL.glVertex2f(x, y)
-        #     GL.glVertex2f(x_next, y)
-        # GL.glEnd()
-
         # We have been drawing to the back buffer, flush the graphics pipeline
         # and swap the back buffer to the front
         GL.glFlush()
@@ -334,14 +320,6 @@ class Gui(wx.Frame):
         # self.switch_names = [self.names.get_name_string(i) for i in self.switch_ids]
         # self.switch_values = [self.devices.get_switch_value(i) for i in self.switch_ids]
         # self.sig_mons, self.sig_not_mons = self.monitors.get_signal_names()
-
-        # # Configure the file menu
-        # fileMenu = wx.Menu()
-        # menuBar = wx.MenuBar()
-        # fileMenu.Append(wx.ID_ABOUT, "&About")
-        # fileMenu.Append(wx.ID_EXIT, "&Exit")
-        # menuBar.Append(fileMenu, "&File")
-        # self.SetMenuBar(menuBar)
 
         # Setup the toolbar
         toolbar = self.CreateToolBar()
@@ -488,7 +466,7 @@ class Gui(wx.Frame):
                 gui.Show(True)
 
         if event.GetId() == self.AboutID:
-            wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
+            wx.MessageBox("Logic Simulator\nTeam 3 - Sherry James Alex\n2024",
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
             
         if event.GetId() == self.HelpID:
@@ -501,16 +479,6 @@ class Gui(wx.Frame):
                     help_window.Show()
             except IOError:
                 wx.LogError("Cannot open file '%s'." % "help.txt")
-
-
-    # def on_menu(self, event):
-    #     """Handle the event when the user selects a menu item."""
-    #     Id = event.GetId()
-    #     if Id == wx.ID_EXIT:
-    #         self.Close(True)
-    #     if Id == wx.ID_ABOUT:
-    #         wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
-    #                       "About Logsim", wx.ICON_INFORMATION | wx.OK)
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
