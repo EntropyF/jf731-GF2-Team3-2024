@@ -155,6 +155,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Draw specified text at position (10, 10)
         self.render_text(text, 10, 10)
+        self.render_text(text, 10, self.canvas_size[1] - 40)
 
         # Draw title
         title_text = ("Monitored Signal Display")
@@ -308,6 +309,8 @@ class Gui(wx.Frame):
         super().__init__(parent=None, title=title, size=(800, 600))
         self.QuitID = 999
         self.OpenID = 998
+        self.AboutID = 997
+        self.HelpID = 996
 
         # Store for monitored signal from network
         self.values = None
@@ -338,12 +341,12 @@ class Gui(wx.Frame):
 
         # Setup the toolbar
         toolbar = self.CreateToolBar()
-        myimage = wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR)
-        toolbar.AddTool(wx.ID_ANY, "New file", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
         toolbar.AddTool(self.OpenID, "Open file", myimage)
-        myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE, wx.ART_TOOLBAR)
-        toolbar.AddTool(wx.ID_ANY, "Save file", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, wx.ART_TOOLBAR)
+        toolbar.AddTool(wx.ID_ANY, "About", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
+        toolbar.AddTool(wx.ID_ANY, "Help", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_QUIT, wx.ART_TOOLBAR)
         toolbar.AddTool(self.QuitID, "Quit", myimage)
         toolbar.Bind(wx.EVT_TOOL, self.Toolbarhandler)
@@ -421,8 +424,7 @@ class Gui(wx.Frame):
         side_sizer1.Add(self.run_button, 1, wx.ALL, 5)
         side_sizer1.Add(self.continue_button, 1, wx.ALL, 5)
 
-        ## Textbox and Switch
-        side_sizer.Add(self.text_box, 1, wx.ALL, 5)
+        ## Switches        
         side_sizer.Add(self.text_switch_control, 1, wx.ALL, 10)
         side_sizer.Add(side_sizer2, 1, wx.ALL, 5)
         side_sizer2.Add(self.switch_choice, 1, wx.ALL, 5)
@@ -436,6 +438,9 @@ class Gui(wx.Frame):
         side_sizer.Add(side_sizer4, 1, wx.ALL, 5)
         side_sizer4.Add(self.remove_monitor_choice, 1, wx.ALL, 5)
         side_sizer4.Add(self.remove_monitor_button, 1, wx.ALL, 5)
+
+        ## Textbox
+        side_sizer.Add(self.text_box, 1, wx.ALL, 5)
 
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
@@ -477,6 +482,22 @@ class Gui(wx.Frame):
                 gui = Gui("Logic Simulator", new_path, names, devices, network, 
                           monitors)
                 gui.Show(True)
+
+        if event.GetId() == self.AboutID:
+            wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
+                          "About Logsim", wx.ICON_INFORMATION | wx.OK)
+            
+        # if event.GetId() == self.HelpID:
+        #     try:
+        #         with open(new_path, 'r') as file:
+        #             content = file.read()
+        #             # Open the new window with the content
+        #             help_window = HelpWindow(None, title='Help', 
+        #                                      content=content)
+        #             help_window.Show()
+        #     except IOError:
+        #         wx.LogError("Cannot open file '%s'." % new_path)
+
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
@@ -622,3 +643,16 @@ class TextWindow(wx.Frame):
         
         self.SetTitle(title)
         self.SetSize((400, 600))
+
+class HelpWindow(wx.Frame):
+    def __init__(self, parent, title, content):
+        super(HelpWindow, self).__init__(parent, title=title)
+
+        # Set up the new window
+        panel = wx.Panel(self)
+        text_ctrl = wx.TextCtrl(panel, value=content,
+                                style=wx.TE_MULTILINE | wx.TE_READONLY,
+                                pos=(10, 10), size=(550, 550))
+        
+        self.SetTitle(title)
+        self.SetSize((600, 600))
