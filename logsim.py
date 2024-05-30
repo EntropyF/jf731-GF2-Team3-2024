@@ -22,7 +22,8 @@ from monitors import Monitors
 from scanner import Scanner
 from parse import Parser
 from userint import UserInterface
-from gui import Gui
+from gui import Gui as Gui2D
+from gui_3D import Gui as Gui3D
 
 
 def main(arg_list):
@@ -56,6 +57,7 @@ def main(arg_list):
         if option == "-h":  # print the usage message
             print(usage_message)
             sys.exit()
+
         elif option == "-c":  # use the command line user interface
             scanner = Scanner(path, names)
             parser = Parser(names, devices, network, monitors, scanner)
@@ -63,6 +65,17 @@ def main(arg_list):
                 # Initialise an instance of the userint.UserInterface() class
                 userint = UserInterface(names, devices, network, monitors)
                 userint.command_interface()
+
+        elif option == "-g":
+            scanner = Scanner(path, names)
+            parser = Parser(names, devices, network, monitors, scanner)
+            if parser.parse_network():
+                # Initialise an instance of the gui.Gui() class
+                app = wx.App()
+                gui = Gui3D("Logic Simulator", path, names, devices, network,
+                        monitors)
+                gui.Show(True)
+                app.MainLoop()
 
     if not options:  # no option given, use the graphical user interface
 
@@ -77,7 +90,7 @@ def main(arg_list):
         if parser.parse_network():
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
-            gui = Gui("Logic Simulator", path, names, devices, network,
+            gui = Gui2D("Logic Simulator", path, names, devices, network,
                       monitors)
             gui.Show(True)
             app.MainLoop()
