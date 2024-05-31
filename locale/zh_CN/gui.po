@@ -1,0 +1,7 @@
+#: gui.py:342
+msgid "Cycles"
+msgstr "循环"
+
+#: gui.py:358
+msgid "Switch On: "
+msgstr "开关状态："

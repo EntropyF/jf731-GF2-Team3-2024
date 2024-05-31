@@ -18,7 +18,7 @@ from network import Network
 from monitors import Monitors
 from scanner import Scanner
 from parse import Parser
-
+import os
 
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
@@ -338,8 +338,9 @@ class Gui(wx.Frame):
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
 
+        _ = wx.GetTranslation
         # Configure the widgets
-        self.text = wx.StaticText(self, wx.ID_ANY, "Cycles") # Cycle static text
+        self.text = wx.StaticText(self, wx.ID_ANY, _("Cycles")) # Cycle static text
         self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10") # A spin for cycle
         self.run_button = wx.Button(self, wx.ID_ANY, "Run") # Run botton
         self.text_box = wx.TextCtrl(self, wx.ID_ANY, "",
@@ -355,7 +356,7 @@ class Gui(wx.Frame):
 
         ## Switch widgets
         self.text_switch_control = wx.StaticText(self, wx.ID_ANY,
-                                                 "Switch On: ") # Switch static text
+                                                 _("Switch On: ")) # Switch static text
         self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SWITCH>", 
                                          choices=self.switch_names) # Drop box of switch choice
         self.switch_choice.SetValue(self.switch_names[0])

@@ -24,6 +24,8 @@ from parse import Parser
 from userint import UserInterface
 from gui import Gui as Gui2D
 from gui_3D import Gui as Gui3D
+import builtins
+import os
 
 
 def main(arg_list):
@@ -90,6 +92,17 @@ def main(arg_list):
         if parser.parse_network():
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
+            lang = os.getenv('LANG', 'en_UK').split('.')[0]
+            locale = wx.Locale(wx.LANGUAGE_DEFAULT)
+            if lang == 'zh_CN':
+                locale = wx.Locale(wx.LANGUAGE_CHINESE_SIMPLIFIED)
+            else:
+                locale = wx.Locale(wx.LANGUAGE_ENGLISH)
+        
+            locale.AddCatalogLookupPathPrefix('./locale')
+            locale.AddCatalog('gui')
+
+            _ = wx.GetTranslation
             gui = Gui2D("Logic Simulator", path, names, devices, network,
                       monitors)
             gui.Show(True)
