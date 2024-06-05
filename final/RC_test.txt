@@ -1,0 +1,26 @@
+###
+Testing if the RC device works
+###
+
+DEVICES:
+RC R1(2), R2(3), R3(4); # The qualifier for RC is the no. cycles before it outputs a low signal
+NOR A1(2), A2(2), A3(2), A4(3);
+
+###
+If correct, A1 should be high after 2 cycles, A2 after 3 and A3+A4 after 4
+###
+
+CONNECTIONS:
+R1 > A1.I1;
+R2 > A1.I2;
+R1 > A2.I1;
+R3 > A2.I2;
+R1 > A3.I1;
+R3 > A3.I2;
+R1 > A4.I1;
+R2 > A4.I2;
+R3 > A4.I3;
+
+
+MONITOR A1, A2, A3, A4;
+

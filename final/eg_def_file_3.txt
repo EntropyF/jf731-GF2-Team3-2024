@@ -1,0 +1,49 @@
+###
+Example 3: Circuit with 2 D-types
+###
+
+DEVICES:
+SWITCH SW1(0), SW2(1), SW3(0), SW4(1);
+AND A1(2);
+NAND A2(2);
+XOR X1;
+OR N2(2);
+NOR N1(2);
+
+DTYPE D1, D2;
+CLOCK C(2);
+
+CONNECTIONS:
+# N1 NOR gate Connections
+SW1 > N1.I1;
+SW2 > N1.I2;
+
+# N2 OR gate Connections
+SW2 > N2.I1;
+SW3 > N2.I2;
+
+# D1 D-Type Connections
+N1 > D1.SET;
+N1 > D1.DATA;
+X1 > D1.CLEAR;
+C > D1.CLK;
+
+# D2 D-Type Connections
+SW4 > D2.SET;
+X1 > D2.DATA;
+N2 > D2.CLEAR;
+C > D2.CLK;
+
+# X1 XOR gate Connections
+D1.QBAR > X1.I1;
+SW2 > X1.I2;
+
+# A1 AND gate Connections
+D1.Q > A1.I1;
+D2.Q > A1.I2;
+
+# A2 NAND gate Connections
+D2.QBAR > A2.I1;
+SW4 > A2.I2;
+
+MONITOR A1, A2;

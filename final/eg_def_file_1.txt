@@ -1,0 +1,18 @@
+###
+Example 1: SR flip-flop circuit
+
+###
+
+DEVICES:
+SWITCH SW1(0), SW2(0);
+NAND G1(2), G2(2);
+
+
+CONNECTIONS:
+SW1 > G1.I1;
+G2 > G1.I2;
+
+G1 > G2.I1;
+SW2 > G2.I2;
+
+MONITOR G1, G2;

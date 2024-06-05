@@ -1,0 +1,34 @@
+Text###Text
+This is a comment. If this appears, then there is something wrong.
+Test###MoreTest
+
+sample text 37 
+
+# This is also a comment. If this appears, something went wrong.
+
+john pork727;
+
+33 77 100 (This is very real) # + =
+# Scanner should raise an error since the + and = here since they are invalid symbols
+
+idk; 
+
+AAAAAAAA 1 1 11 1 one1
+
+>.
+
+
+# asdasdsad
+# asdasdas
+a 1a5
+
+# some duplicate names
+This text is AAAAAAAA
+
+### # # # # # # # # # # # # # #
+If this appears, there is something wrong
+# please dont break
+### one1
+
+# ### what happens here?
+### 

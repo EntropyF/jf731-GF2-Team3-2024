@@ -1,0 +1,47 @@
+msgid "Monitored Signal Display"
+msgstr "监视器信号显示"
+
+msgid "Not all input connected..."
+msgstr "输入信号未连接……"
+
+msgid "Network Oscillating..."
+msgstr "连接不稳定……"
+
+msgid "Click Run button to START."
+msgstr "点击【运行】按钮开始"
+
+msgid "Cycles:"
+msgstr "循环次数："
+
+msgid "Run"
+msgstr "运行"
+
+msgid "Continue"
+msgstr "继续"
+
+msgid "Switch State: "
+msgstr "开关状态："
+
+msgid "Monitor Control:"
+msgstr "监视器控制"
+
+msgid "Add"
+msgstr "添加"
+
+msgid "Remove"
+msgstr "移除"
+
+msgid "Open txt file"
+msgstr "打开TXT文件"
+
+msgid "Definition File Content"
+msgstr "定义文件内容"
+
+msgid "Logic Simulator"
+msgstr "逻辑电路模拟器"
+
+msgid "About Logsim"
+msgstr "关于"
+
+msgid "Help"
+msgstr "帮助"
