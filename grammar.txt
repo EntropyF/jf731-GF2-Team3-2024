@@ -1,0 +1,26 @@
+
+----- EBNF GRAMMAR -----
+
+
+definition_file = "DEVICES", ":" {device_instantiation} 
+                    , "CONNECTIONS", ":", {connection}
+                    , [monitor];
+
+
+device_instantiation = device_type, device_name_init, {",", device_name_init} ";" ;
+device_name_init = device_identifier, ["(", number ,")"]
+
+device_type = "CLOCK" | "SWITCH" | "AND" | "NAND" | "OR" | "NOR" | "DTYPE" | "XOR" | "RC" ;
+
+monitor = "MONITOR" , output_identifier_group, ";";
+
+connection = output_identifier,  ">", input_identifier, ";";
+
+output_identifier_group = output_identifier , { "," , output_identifier };
+
+output_identifier = device_identifier, [".", ("Q" | "QBAR")];
+input_identifier = device_identifier, ".", ("CLK" | "DATA" | "SET" | "CLEAR" | number_input);
+
+device_identifier = letter, {letter | digit} ;
+number_input = "I", digit, {digit} ;
+number = digit, {digit} ;

@@ -22,8 +22,7 @@ from monitors import Monitors
 from scanner import Scanner
 from parse import Parser
 from userint import UserInterface
-from gui import Gui as Gui2D
-from gui_3D import Gui as Gui3D
+from gui import Gui as Gui
 import builtins
 import os
 
@@ -38,7 +37,7 @@ def main(arg_list):
                      "Command line user interface: logsim.py -c <file path>\n"
                      "Graphical user interface: logsim.py <file path>")
     try:
-        options, arguments = getopt.getopt(arg_list, "hcg:")
+        options, arguments = getopt.getopt(arg_list, "hc:")
     except getopt.GetoptError:
         print("Error: invalid command line arguments\n")
         print(usage_message)
@@ -66,17 +65,6 @@ def main(arg_list):
                 userint = UserInterface(names, devices, network, monitors)
                 userint.command_interface()
 
-        elif option == "-g":
-            scanner = Scanner(path, names)
-            parser = Parser(names, devices, network, monitors, scanner)
-            if parser.parse_network():
-                # Initialise an instance of the gui.Gui() class
-                app = wx.App()
-                gui = Gui3D("Logic Simulator", path, names, devices, network,
-                        monitors)
-                gui.Show(True)
-                app.MainLoop()
-
     if not options:  # no option given, use the graphical user interface
 
         if len(arguments) != 1:  # wrong number of arguments
@@ -103,7 +91,7 @@ def main(arg_list):
             locale.AddCatalogLookupPathPrefix('./locale')
             locale.AddCatalog('gui')
             
-            gui = Gui2D(_("Logic Simulator"), path, names, devices, network,
+            gui = Gui(_("Logic Simulator"), path, names, devices, network,
                       monitors)
             gui.Show(True)
             app.MainLoop()

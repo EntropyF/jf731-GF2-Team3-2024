@@ -93,7 +93,11 @@ class Devices:
 
     make_d_type(self, device_id): Makes a D-type device.
 
-    cold_startup(self): Simulates cold start-up of D-types and clocks.
+    make_rc(self, device_id, clock_low_period): Makes an RC device with the
+                                                specified low period.
+
+    cold_startup(self): Simulates cold start-up of D-types and clocks and sets
+                        the RC devices to a high signal
 
     make_device(self, device_id, device_kind, device_property=None): Creates
                        the specified device and returns errors if unsuccessful.

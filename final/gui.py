@@ -295,7 +295,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.SetCurrent(self.context)
         if not self.init:
             # Configure the viewport, modelview and projection matrices
-            self.init_gl()
+            if self.screen_type[1]:
+                self.init_gl_3D()
+            else:
+                self.init_gl()
             self.init = True
 
         size = self.GetClientSize()
@@ -334,11 +337,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 GL.glLoadIdentity()
                 x = event.GetX() - self.last_mouse_x
                 y = event.GetY() - self.last_mouse_y
-                if event.LeftIsDown():
+                if event.RightIsDown():
                     GL.glRotatef(math.sqrt((x * x) + (y * y)), y, x, 0)
                 if event.MiddleIsDown():
                     GL.glRotatef((x + y), 0, 0, 1)
-                if event.RightIsDown():
+                if event.LeftIsDown():
                     self.pan_x += x
                     self.pan_y -= y
                 GL.glMultMatrixf(self.scene_rotate)
